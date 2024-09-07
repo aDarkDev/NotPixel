@@ -5,8 +5,8 @@ a fully automatic tool for claiming and painting. With built-in anti-detection f
 ![d](https://github.com/aDarkDev/NotPixel/blob/3478a347a2783afbe5faff49672c4bead56d9907/shot.png)
 
 ## Features:
-* Claim
-* Paint pixel
+* Claim Mining
+* Paint Pixel
 * Show user balance
 * Anti detect
 * easy to use as module
