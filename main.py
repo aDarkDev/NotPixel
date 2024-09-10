@@ -2,13 +2,14 @@ from telethon.sync import TelegramClient,functions
 from urllib.parse import unquote
 import threading
 import requests
+import urllib3
 import random
 import time
 
 api_id = 123 # your api id
 api_hash = "123" # your api hash
 client = TelegramClient("NotPx_Auto",api_id,api_hash).start()
-report_but_text = "If you have done all the steps correctly and you think this is a bug, report it to github.com/aDarkDev with response. response: {}"
+report_bug_text = "If you have done all the steps correctly and you think this is a bug, report it to github.com/aDarkDev with response. response: {}"
 authenticate_error = "Please follow the steps correctly. Not authenticated."
 
 def GetWebAppData():
@@ -22,6 +23,9 @@ def GetWebAppData():
 class NotPx:
     def __init__(self) -> None:
         self.session = requests.Session()
+        self.__update_headers()
+
+    def __update_headers(self):
         WebAppQuery = GetWebAppData()
         self.session.headers = {
             'Accept': 'application/json, text/plain, */*',
@@ -38,30 +42,58 @@ class NotPx:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.6045.105 Safari/537.36',
         }
 
-    def claim_mining(self):
-        response = self.session.get("https://notpx.app/api/v1/mining/claim")
-        if response.status_code == 200:
-            if 'claimed' in response.text:
-                json_response = response.json()
-                return json_response['claimed']
+    def request(self,method,end_point,key_check,data=None):
+        try:
+            if method == "get":
+                response = self.session.get(f"https://notpx.app/api/v1{end_point}",timeout=5)
+                if response.status_code == 200:
+                    if key_check in response.text:
+                        json_response = response.json()
+                        return json_response
+                    else:
+                        raise Exception(report_bug_text.format(response.text))
+                else:
+                    raise Exception(authenticate_error)
             else:
-                raise Exception(report_but_text.format(response.text))
-        else:
-            raise Exception(authenticate_error)
+                response = self.session.post(f"https://notpx.app/api/v1{end_point}",timeout=5,json=data)
+                if response.status_code == 200:
+                    if key_check in response.text:
+                        json_response = response.json()
+                        return json_response
+                    else:
+                        raise Exception(report_bug_text.format(response.text))
+                elif response.status_code >= 500:
+                    time.sleep(5)
+                    return self.request(method,end_point,key_check,data)
+                else:
+                    raise Exception(authenticate_error)
+        except requests.exceptions.ConnectionError:
+            print("[!] {}Requester{}: {}ConnectionError{} {}. Sleeping for 5s...".format(
+                    Colors.CYAN,Colors.END,
+                    Colors.RED,Colors.END,
+                    end_point
+                ))
+            time.sleep(5)
+        except urllib3.exceptions.NewConnectionError:
+            print("[!] {}Requester{}: {}NewConnectionError{} {}. Sleeping for 5s...".format(
+                    Colors.CYAN,Colors.END,
+                    Colors.RED,Colors.END,
+                    end_point
+                ))
+            time.sleep(5)
+        except requests.exceptions.Timeout:
+            print("[!] {}Requester{}: {}Timeout Error{} {}. Sleeping for 5s...".format(
+                    Colors.CYAN,Colors.END,
+                    Colors.RED,Colors.END,
+                    end_point
+                ))
+            time.sleep(5)
+
+    def claim_mining(self):
+        return self.request("get","/mining/claim","claimed")['claimed']
 
     def accountStatus(self):
-        response = self.session.get("https://notpx.app/api/v1/mining/status")
-        if response.status_code == 200:
-            if 'speedPerSecond' in response.text:
-                json_response = response.json()
-                return json_response
-            else:
-                raise Exception(report_but_text.format(response.text))
-        else:
-            raise Exception(authenticate_error)
-
-        # Response Example:
-        # {"coins":0,"speedPerSecond":0.0075,"fromStart":772,"fromUpdate":0,"maxMiningTime":28800,"claimed":0,"boosts":{"channel":true,"premium":true,"x":true},"totalUserPixels":27,"userBalance":2992.0272222222225,"activated":true,"league":"bronze","charges":5,"maxCharges":13,"reChargeTimer":166143,"reChargeSpeed":180000,"goods":{"2":3}}
+        return self.request("get","/mining/status","speedPerSecond")
 
     def paintPixel(self):
         # making pixel randomly
@@ -69,16 +101,7 @@ class NotPx:
         random_pixel = (random.randint(100,990) * 1000) + random.randint(100,990)
         data = {"pixelId":random_pixel,"newColor":random.choice(colors)}
 
-        response = self.session.post("https://notpx.app/api/v1/repaint/start",json=data)
-        if response.status_code == 200:
-            if 'balance' in response.text:
-                json_response = response.json()
-                return json_response['balance']
-            else:
-                raise Exception(report_but_text.format(response.text))
-        else:
-            raise Exception(authenticate_error)
-
+        return self.request("post","/repaint/start","balance",data)['balance']
 
 class Colors:
     # Source: https://gist.github.com/rene-d/9e584a7dd2935d0f461904b9f2950007
@@ -128,32 +151,52 @@ print("""{}
 | |\  | (_) | |_| |    >  <  | |_/ / (_) | |_ 
 \_| \_/\___/ \__\_|   /_/\_\ \____/ \___/ \__|
                                               
-        NotPx Auto Paint & Claim by aDarkDev - v0.1 {}\n""".format(Colors.BLUE,Colors.END))
+        NotPx Auto Paint & Claim by aDarkDev - v0.2 {}\n""".format(Colors.BLUE,Colors.END))
 
 NotPxClient = NotPx()
 
 def painter():
     print("[+] {}Auto painting started{}.".format(Colors.CYAN,Colors.END))
     while True:
-        charges = NotPxClient.accountStatus()['charges']
-        if charges > 0:
-            for _ in range(charges):
-                balance = NotPxClient.paintPixel()
-                print("[+] {}Painter{}: 1 {}Pixel painted{} successfully. User new balance: {}{}{}".format(
+        try:
+            charges = NotPxClient.accountStatus()['charges']
+            if charges > 0:
+                for _ in range(charges):
+                    balance = NotPxClient.paintPixel()
+                    print("[+] {}Painter{}: 1 {}Pixel painted{} successfully. User new balance: {}{}{}".format(
+                        Colors.CYAN,Colors.END,
+                        Colors.GREEN,Colors.END,
+                        Colors.GREEN,balance,Colors.END
+                    ))
+                    t = random.randint(1,6)
+                    print("[!] {}Painter anti-detect{}: Sleeping for {}...".format(Colors.CYAN,Colors.END,t))
+                    time.sleep(t)
+            else:
+                print("[!] {}Painter{}: {}No charge aviable{}. Sleeping for 5 minutes...".format(
                     Colors.CYAN,Colors.END,
-                    Colors.GREEN,Colors.END,
-                    Colors.GREEN,balance,Colors.END
+                    Colors.YELLOW,Colors.END
                 ))
-                t = random.randint(1,6)
-                print("[!] {}Painter anti-detect{}: Sleeping for {}...".format(Colors.CYAN,Colors.END,t))
-                time.sleep(t)
-        else:
-            print("[!] {}Painter{}: {}No charge aviable{}. Sleeping for 5 minutes...".format(
-                Colors.CYAN,Colors.END,
-                Colors.YELLOW,Colors.END
-            ))
-            time.sleep(300)
-
+                time.sleep(300)
+        except requests.exceptions.ConnectionError:
+            print("[!] {}Painter{}: {}ConnectionError{}. Sleeping for 5s...".format(
+                    Colors.CYAN,Colors.END,
+                    Colors.RED,Colors.END
+                ))
+            time.sleep(5)
+        except urllib3.exceptions.NewConnectionError:
+            print("[!] {}Painter{}: {}NewConnectionError{}. Sleeping for 5s...".format(
+                    Colors.CYAN,Colors.END,
+                    Colors.RED,Colors.END
+                ))
+            time.sleep(5)
+        except requests.exceptions.Timeout:
+            print("[!] {}Painter{}: {}Timeout Error{}. Sleeping for 5s...".format(
+                    Colors.CYAN,Colors.END,
+                    Colors.RED,Colors.END
+                ))
+            time.sleep(5)
+        
+        
 def mine_claimer():
     print("[+] {}Auto claiming started{}.".format(Colors.CYAN,Colors.END))
     while True:
