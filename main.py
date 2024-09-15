@@ -95,11 +95,19 @@ class NotPx:
     def accountStatus(self):
         return self.request("get","/mining/status","speedPerSecond")
 
-    def paintPixel(self):
+    def autoPaintPixel(self):
         # making pixel randomly
         colors = [ "#FFFFFF" , "#000000" , "#00CC78" , "#BE0039" ]
         random_pixel = (random.randint(100,990) * 1000) + random.randint(100,990)
         data = {"pixelId":random_pixel,"newColor":random.choice(colors)}
+
+        return self.request("post","/repaint/start","balance",data)['balance']
+    
+    def paintPixel(self,x,y):
+        # making pixel randomly
+        colors = [ "#FFFFFF" , "#000000" , "#00CC78" , "#BE0039" ]
+        pixelformated = (y * 1000) + x + 1
+        data = {"pixelId":pixelformated,"newColor":random.choice(colors)}
 
         return self.request("post","/repaint/start","balance",data)['balance']
 
@@ -151,7 +159,7 @@ print("""{}
 | |\  | (_) | |_| |    >  <  | |_/ / (_) | |_ 
 \_| \_/\___/ \__\_|   /_/\_\ \____/ \___/ \__|
                                               
-        NotPx Auto Paint & Claim by aDarkDev - v0.2 {}\n""".format(Colors.BLUE,Colors.END))
+        NotPx Auto Paint & Claim by aDarkDev - v1.0 {}\n""".format(Colors.BLUE,Colors.END))
 
 NotPxClient = NotPx()
 
@@ -159,10 +167,16 @@ def painter():
     print("[+] {}Auto painting started{}.".format(Colors.CYAN,Colors.END))
     while True:
         try:
-            charges = NotPxClient.accountStatus()['charges']
+            charges = NotPxClient.accountStatus()
+            if not charges:
+                time.sleep(5)
+                continue
+            else:
+                charges = charges['charges']
+
             if charges > 0:
                 for _ in range(charges):
-                    balance = NotPxClient.paintPixel()
+                    balance = NotPxClient.autoPaintPixel()
                     print("[+] {}Painter{}: 1 {}Pixel painted{} successfully. User new balance: {}{}{}".format(
                         Colors.CYAN,Colors.END,
                         Colors.GREEN,Colors.END,
@@ -172,11 +186,11 @@ def painter():
                     print("[!] {}Painter anti-detect{}: Sleeping for {}...".format(Colors.CYAN,Colors.END,t))
                     time.sleep(t)
             else:
-                print("[!] {}Painter{}: {}No charge aviable{}. Sleeping for 5 minutes...".format(
+                print("[!] {}Painter{}: {}No charge aviable{}. Sleeping for 10 minutes...".format(
                     Colors.CYAN,Colors.END,
                     Colors.YELLOW,Colors.END
                 ))
-                time.sleep(300)
+                time.sleep(600)
         except requests.exceptions.ConnectionError:
             print("[!] {}Painter{}: {}ConnectionError{}. Sleeping for 5s...".format(
                     Colors.CYAN,Colors.END,
