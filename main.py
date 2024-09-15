@@ -103,11 +103,9 @@ class NotPx:
 
         return self.request("post","/repaint/start","balance",data)['balance']
     
-    def paintPixel(self,x,y):
-        # making pixel randomly
-        colors = [ "#FFFFFF" , "#000000" , "#00CC78" , "#BE0039" ]
+    def paintPixel(self,x,y,hex_color):
         pixelformated = (y * 1000) + x + 1
-        data = {"pixelId":pixelformated,"newColor":random.choice(colors)}
+        data = {"pixelId":pixelformated,"newColor":hex_color}
 
         return self.request("post","/repaint/start","balance",data)['balance']
 
@@ -186,7 +184,7 @@ def painter():
                     print("[!] {}Painter anti-detect{}: Sleeping for {}...".format(Colors.CYAN,Colors.END,t))
                     time.sleep(t)
             else:
-                print("[!] {}Painter{}: {}No charge aviable{}. Sleeping for 10 minutes...".format(
+                print("[!] {}Painter{}: {}No charge available{}. Sleeping for 10 minutes...".format(
                     Colors.CYAN,Colors.END,
                     Colors.YELLOW,Colors.END
                 ))
