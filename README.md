@@ -5,13 +5,17 @@ a fully automatic tool for claiming and painting. With built-in anti-detection f
 ![d](https://github.com/aDarkDev/NotPixel/blob/3478a347a2783afbe5faff49672c4bead56d9907/shot.png)
 
 ## Features:
-* Claim Mining
-* Paint Pixel
-* Show user balance
-* Anti detect
-* easy to use as module
+* 👾 Multi-Session ( New Update )
+* 🔥 Multi-Thread  ( New Update )
+* ⭕️ Error handling  ( New Update )
+* ✍🏻 Draw with desired x,y ( New Update )
+* 💰 Claim Mining
+* 💰 Paint Pixel
+* 💸 Show user balance
+* 🤖 Anti detect
+* 🐍 easy to use as module
 
-Additional features are introduced when a repository receives over `30 stars`.
+Upcoming features: `Level Up` and `Boosts`.
 
 ## Installation
 
@@ -30,6 +34,24 @@ include your `API Hash` and `API ID`, which can be obtained from [my.telegram.or
 then just run it!
 ```bash
 $ python3 main.py
+```
+
+## Using as Module:
+Example:
+```python3
+from telethon import TelegramClient
+from NotPixel import NotPx
+
+
+api_id = 123 # your api id
+api_hash = "123" # your api hash
+
+client = TelegramClient("my_session",api_id,api_hash).start()
+NotPx_client = NotPx(client)
+NotPx_client.accountStatus()
+NotPx_client.paintPixel(...)
+NotPx_client.claim_mining(...)
+NotPx_client.request(...)
 ```
 
 ### Don't forget to star⭐️ the project and report any bugs🪲 you encounter. Good luck!
