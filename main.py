@@ -5,14 +5,14 @@ import requests
 import urllib3
 import random
 import time
+import os
 
 api_id = 123 # your api id
 api_hash = "123" # your api hash
-client = TelegramClient("NotPx_Auto",api_id,api_hash).start()
 report_bug_text = "If you have done all the steps correctly and you think this is a bug, report it to github.com/aDarkDev with response. response: {}"
 authenticate_error = "Please follow the steps correctly. Not authenticated."
 
-def GetWebAppData():
+def GetWebAppData(client):
     notcoin = client.get_entity("notpixel")
     msg = client(functions.messages.RequestWebViewRequest(notcoin,notcoin,platform="android",url="https://notpx.app/"))
     webappdata_global = msg.url.split('https://notpx.app/#tgWebAppData=')[1].replace("%3D","=").split('&tgWebAppVersion=')[0].replace("%26","&")
@@ -21,12 +21,12 @@ def GetWebAppData():
     return webappdata_global
 
 class NotPx:
-    def __init__(self) -> None:
+    def __init__(self,client) -> None:
         self.session = requests.Session()
-        self.__update_headers()
+        self.__update_headers(client)
 
-    def __update_headers(self):
-        WebAppQuery = GetWebAppData()
+    def __update_headers(self,client):
+        WebAppQuery = GetWebAppData(client)
         self.session.headers = {
             'Accept': 'application/json, text/plain, */*',
             'Accept-Language': 'en-US,en;q=0.9',
@@ -46,6 +46,12 @@ class NotPx:
         try:
             if method == "get":
                 response = self.session.get(f"https://notpx.app/api/v1{end_point}",timeout=5)
+                # handle notpixel heavyload error
+                if "failed to parse" in response.text:
+                    print("[x] {}NotPixel internal error. wait 5 minutes...{}".format(Colors.RED,Colors.END))
+                    time.sleep(5*60)
+                    return
+                
                 if response.status_code == 200:
                     if key_check in response.text:
                         json_response = response.json()
@@ -56,6 +62,12 @@ class NotPx:
                     raise Exception(authenticate_error)
             else:
                 response = self.session.post(f"https://notpx.app/api/v1{end_point}",timeout=5,json=data)
+                # handle notpixel heavyload error
+                if "failed to parse" in response.text:
+                    print("[x] {}NotPixel internal error. wait 5 minutes...{}".format(Colors.RED,Colors.END))
+                    time.sleep(5*60)
+                    return
+                
                 if response.status_code == 200:
                     if key_check in response.text:
                         json_response = response.json()
@@ -157,11 +169,10 @@ print("""{}
 | |\  | (_) | |_| |    >  <  | |_/ / (_) | |_ 
 \_| \_/\___/ \__\_|   /_/\_\ \____/ \___/ \__|
                                               
-        NotPx Auto Paint & Claim by aDarkDev - v1.0 {}\n""".format(Colors.BLUE,Colors.END))
+        NotPx Auto Paint & Claim by aDarkDev - v1.5 {}\n""".format(Colors.BLUE,Colors.END))
 
-NotPxClient = NotPx()
 
-def painter():
+def painter(NotPxClient:NotPx,session_name:str):
     print("[+] {}Auto painting started{}.".format(Colors.CYAN,Colors.END))
     while True:
         try:
@@ -175,41 +186,43 @@ def painter():
             if charges > 0:
                 for _ in range(charges):
                     balance = NotPxClient.autoPaintPixel()
-                    print("[+] {}Painter{}: 1 {}Pixel painted{} successfully. User new balance: {}{}{}".format(
-                        Colors.CYAN,Colors.END,
+                    print("[+] {}{}{}: 1 {}Pixel painted{} successfully. User new balance: {}{}{}".format(
+                        Colors.CYAN,session_name,Colors.END,
                         Colors.GREEN,Colors.END,
                         Colors.GREEN,balance,Colors.END
                     ))
                     t = random.randint(1,6)
-                    print("[!] {}Painter anti-detect{}: Sleeping for {}...".format(Colors.CYAN,Colors.END,t))
+                    print("[!] {}{} anti-detect{}: Sleeping for {}...".format(Colors.CYAN,session_name,Colors.END,t))
                     time.sleep(t)
             else:
-                print("[!] {}Painter{}: {}No charge available{}. Sleeping for 10 minutes...".format(
-                    Colors.CYAN,Colors.END,
+                print("[!] {}{}{}: {}No charge available{}. Sleeping for 10 minutes...".format(
+                    Colors.CYAN,session_name,Colors.END,
                     Colors.YELLOW,Colors.END
                 ))
                 time.sleep(600)
         except requests.exceptions.ConnectionError:
-            print("[!] {}Painter{}: {}ConnectionError{}. Sleeping for 5s...".format(
-                    Colors.CYAN,Colors.END,
+            print("[!] {}{}{}: {}ConnectionError{}. Sleeping for 5s...".format(
+                    Colors.CYAN,session_name,Colors.END,
                     Colors.RED,Colors.END
                 ))
             time.sleep(5)
         except urllib3.exceptions.NewConnectionError:
-            print("[!] {}Painter{}: {}NewConnectionError{}. Sleeping for 5s...".format(
-                    Colors.CYAN,Colors.END,
+            print("[!] {}{}{}: {}NewConnectionError{}. Sleeping for 5s...".format(
+                    Colors.CYAN,session_name,Colors.END,
                     Colors.RED,Colors.END
                 ))
             time.sleep(5)
         except requests.exceptions.Timeout:
-            print("[!] {}Painter{}: {}Timeout Error{}. Sleeping for 5s...".format(
-                    Colors.CYAN,Colors.END,
+            print("[!] {}{}{}: {}Timeout Error{}. Sleeping for 5s...".format(
+                    Colors.CYAN,session_name,Colors.END,
                     Colors.RED,Colors.END
                 ))
             time.sleep(5)
         
         
-def mine_claimer():
+def mine_claimer(NotPxClient:NotPx,session_name:str):
+    time.sleep(5) # start with delay...
+
     print("[+] {}Auto claiming started{}.".format(Colors.CYAN,Colors.END))
     while True:
         acc_data = NotPxClient.accountStatus()
@@ -217,16 +230,45 @@ def mine_claimer():
         speedPerSecond = acc_data['speedPerSecond']
         if fromStart * speedPerSecond > 2:
             claimed_count = round(NotPxClient.claim_mining(),2)
-            print("[+] {}Miner{}: {} NotPx Token {}claimed{}.".format(
-                Colors.CYAN,Colors.END,
+            print("[+] {}{}{}: {} NotPx Token {}claimed{}.".format(
+                Colors.CYAN,session_name,Colors.END,
                 claimed_count,Colors.GREEN,Colors.END
             ))
 
-        print("[!] {}Miner{}: Sleeping for 1 hour...".format(Colors.CYAN,Colors.END))
+        print("[!] {}{}{}: Sleeping for 1 hour...".format(Colors.CYAN,session_name,Colors.END))
         time.sleep(3600)
 
+def multithread_starter():
+    dirs = os.listdir("sessions/")
+    sessions = list(filter(lambda x: x.endswith(".session"),dirs))
+    sessions = list(map(lambda x: x.split(".session")[0],sessions))
+    for session_name in sessions:
+        try:
+            client = TelegramClient("sessions/"+session_name,api_id,api_hash).start()
+            cli = NotPx(client)
+            threading.Thread(target=painter,args=[cli,session_name]).start()
+            threading.Thread(target=mine_claimer,args=[cli,session_name]).start()
+        except Exception as e:
+            print("[!] {}Error on load session{} \"{}\", error: {}".format(Colors.RED,Colors.END,session_name,e))
 
 # start script
 if __name__ == "__main__":
-    threading.Thread(target=painter).start()
-    mine_claimer()
+    if not os.path.exists("sessions"):
+        os.mkdir("sessions")
+
+    while True:
+        option = input("[!] {}Enter 1{} For Adding Account and {}2 for start{} mine + claim: ".format(Colors.BLUE,Colors.END,Colors.BLUE,Colors.END))
+        if option == "1":
+            name = input("\nEnter Session name: ")
+            if not any(name in i for i in os.listdir("sessions/")):
+                client = TelegramClient("sessions/"+name,api_id,api_hash).start()
+                client.disconnect()
+                print("[+] Session {} {}saved success{}.".format(name,Colors.GREEN,Colors.END))
+            else:
+                print("[x] Session {} {}already exist{}.".format(name,Colors.RED,Colors.END))
+        elif option == "2":
+            print("{}Warning!{} Most airdrops utilize {}UTC detection to prevent cheating{}, which means they monitor your sleep patterns and the timing of your tasks. It's advisable to {}run your script when you're awake and to pause it before you go to sleep{}.".format(
+                Colors.YELLOW,Colors.END,Colors.YELLOW,Colors.END,Colors.YELLOW,Colors.END
+            ))
+            multithread_starter()
+            break
