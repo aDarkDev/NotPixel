@@ -228,7 +228,7 @@ def mine_claimer(NotPxClient:NotPx,session_name:str):
         acc_data = NotPxClient.accountStatus()
         fromStart = acc_data['fromStart']
         speedPerSecond = acc_data['speedPerSecond']
-        if fromStart * speedPerSecond > 2:
+        if fromStart * speedPerSecond > 0.3:
             claimed_count = round(NotPxClient.claim_mining(),2)
             print("[+] {}{}{}: {} NotPx Token {}claimed{}.".format(
                 Colors.CYAN,session_name,Colors.END,
