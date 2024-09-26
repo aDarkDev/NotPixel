@@ -26,6 +26,7 @@ class NotPx:
         self.__update_headers(client)
 
     def __update_headers(self,client):
+        self.client = client
         WebAppQuery = GetWebAppData(client)
         self.session.headers = {
             'Accept': 'application/json, text/plain, */*',
@@ -59,7 +60,10 @@ class NotPx:
                     else:
                         raise Exception(report_bug_text.format(response.text))
                 else:
-                    raise Exception(authenticate_error)
+                    WebAppQuery = GetWebAppData(self.client)
+                    self.session.headers['Authorization'] = WebAppQuery
+                    print("[+] Authentication renewed!")
+                    # raise Exception(authenticate_error)
             else:
                 response = self.session.post(f"https://notpx.app/api/v1{end_point}",timeout=5,json=data)
                 # handle notpixel heavyload error
@@ -78,7 +82,10 @@ class NotPx:
                     time.sleep(5)
                     return self.request(method,end_point,key_check,data)
                 else:
-                    raise Exception(authenticate_error)
+                    WebAppQuery = GetWebAppData(self.client)
+                    self.session.headers['Authorization'] = WebAppQuery
+                    print("[+] Authentication renewed!")
+                    # raise Exception(authenticate_error)
         except requests.exceptions.ConnectionError:
             print("[!] {}Requester{}: {}ConnectionError{} {}. Sleeping for 5s...".format(
                     Colors.CYAN,Colors.END,
