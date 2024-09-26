@@ -1,14 +1,19 @@
-from telethon.sync import TelegramClient,functions
+import os
+from dotenv import load_dotenv
+from telethon.sync import TelegramClient, functions
 from urllib.parse import unquote
 import threading
 import requests
 import urllib3
 import random
 import time
-import os
 
-api_id = 123 # your api id
-api_hash = "123" # your api hash
+# Load environment variables from .env file
+load_dotenv()
+
+# Retrieve the API ID and hash from environment variables
+api_id = int(os.getenv("API_ID"))  # Convert to int
+api_hash = os.getenv("API_HASH")
 report_bug_text = "If you have done all the steps correctly and you think this is a bug, report it to github.com/aDarkDev with response. response: {}"
 authenticate_error = "Please follow the steps correctly. Not authenticated."
 
@@ -142,7 +147,7 @@ class Colors:
             del kernel32
 
 
-print("""{}
+print(r"""{}
  _   _       _  ______       ______       _   
 | \ | |     | | | ___ \      | ___ \     | |  
 |  \| | ___ | |_| |_/ /_  __ | |_/ / ___ | |_ 
@@ -150,7 +155,7 @@ print("""{}
 | |\  | (_) | |_| |    >  <  | |_/ / (_) | |_ 
 \_| \_/\___/ \__\_|   /_/\_\ \____/ \___/ \__|
                                               
-        NotPx Auto Paint & Claim by aDarkDev - v1.5 {}\n""".format(Colors.BLUE,Colors.END))
+        NotPx Auto Paint & Claim by aDarkDev - v1.5 {}\n""".format(Colors.BLUE, Colors.END))
 
 
 def painter(NotPxClient:NotPx,session_name:str):
@@ -201,22 +206,33 @@ def painter(NotPxClient:NotPx,session_name:str):
             time.sleep(5)
         
         
-def mine_claimer(NotPxClient:NotPx,session_name:str):
-    time.sleep(5) # start with delay...
+def mine_claimer(NotPxClient: NotPx, session_name: str):
+    time.sleep(5)  # start with delay...
 
-    print("[+] {}Auto claiming started{}.".format(Colors.CYAN,Colors.END))
+    print("[+] {}Auto claiming started{}.".format(Colors.CYAN, Colors.END))
     while True:
         acc_data = NotPxClient.accountStatus()
-        fromStart = acc_data['fromStart']
-        speedPerSecond = acc_data['speedPerSecond']
-        if fromStart * speedPerSecond > 0.3:
-            claimed_count = round(NotPxClient.claim_mining(),2)
-            print("[+] {}{}{}: {} NotPx Token {}claimed{}.".format(
-                Colors.CYAN,session_name,Colors.END,
-                claimed_count,Colors.GREEN,Colors.END
-            ))
-
-        print("[!] {}{}{}: Sleeping for 1 hour...".format(Colors.CYAN,session_name,Colors.END))
+        
+        # Check if acc_data is None
+        if acc_data is None:
+            print("[!] {}{}{}: {}Failed to retrieve account status. Retrying...{}".format(Colors.CYAN, session_name, Colors.END, Colors.RED, Colors.END))
+            time.sleep(5)  # Wait before retrying
+            continue
+        
+        # Check if the necessary keys exist in acc_data
+        if 'fromStart' in acc_data and 'speedPerSecond' in acc_data:
+            fromStart = acc_data['fromStart']
+            speedPerSecond = acc_data['speedPerSecond']
+            if fromStart * speedPerSecond > 0.3:
+                claimed_count = round(NotPxClient.claim_mining(), 2)
+                print("[+] {}{}{}: {} NotPx Token {}claimed{}.".format(
+                    Colors.CYAN, session_name, Colors.END,
+                    claimed_count, Colors.GREEN, Colors.END
+                ))
+        else:
+            print("[!] {}{}{}: {}Unexpected account data format. Retrying...{}".format(Colors.CYAN, session_name, Colors.END, Colors.RED, Colors.END))
+        
+        print("[!] {}{}{}: Sleeping for 1 hour...".format(Colors.CYAN, session_name, Colors.END))
         time.sleep(3600)
 
 def multithread_starter():
