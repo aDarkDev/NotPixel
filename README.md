@@ -19,39 +19,19 @@ Upcoming features: `Level Up` and `Boosts`.
 
 ## Installation
 
-install telethon library to get `webappdata`
-```bash
-$ pip3 install telethon
-```
+1. Install the required libraries:
+   ```bash
+   $ python3 -m pip install -r requirements.txt
+   ```
+2. Copy the example environment file:
+   ```bash
+   $ cp .env.example .env
+   ```
+3. Edit the .env file to include your API Hash and API ID, which can be obtained from [my.telegram.org](https://my.telegram.org) under the Development section.
 
-edit line 
-```python3
-api_id = 123 # your api id
-api_hash = "123" # your api hash
-```
-include your `API Hash` and `API ID`, which can be obtained from [my.telegram.org](https://my.telegram.org) under the Development section.
-
-then just run it!
+Then just run it!
 ```bash
 $ python3 main.py
-```
-
-## Using as Module:
-Example:
-```python3
-from telethon import TelegramClient
-from NotPixel import NotPx
-
-
-api_id = 123 # your api id
-api_hash = "123" # your api hash
-
-client = TelegramClient("my_session",api_id,api_hash).start()
-NotPx_client = NotPx(client)
-NotPx_client.accountStatus()
-NotPx_client.paintPixel(...)
-NotPx_client.claim_mining(...)
-NotPx_client.request(...)
 ```
 
 ### Don't forget to star⭐️ the project and report any bugs🪲 you encounter. Good luck!
