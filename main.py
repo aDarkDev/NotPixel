@@ -43,70 +43,44 @@ class NotPx:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.6045.105 Safari/537.36',
         }
 
-    def request(self,method,end_point,key_check,data=None):
+    def request(self, method, end_point, key_check, data=None):
         try:
             if method == "get":
-                response = self.session.get(f"https://notpx.app/api/v1{end_point}",timeout=5)
-                # handle notpixel heavyload error
-                if "failed to parse" in response.text:
-                    print("[x] {}NotPixel internal error. wait 5 minutes...{}".format(Colors.RED,Colors.END))
-                    time.sleep(5*60)
-                    return
-                
-                if response.status_code == 200:
-                    if key_check in response.text:
-                        json_response = response.json()
-                        return json_response
-                    else:
-                        raise Exception(report_bug_text.format(response.text))
-                else:
-                    WebAppQuery = GetWebAppData(self.client)
-                    self.session.headers['Authorization'] = WebAppQuery
-                    print("[+] Authentication renewed!")
-                    # raise Exception(authenticate_error)
+                response = self.session.get(f"https://notpx.app/api/v1{end_point}", timeout=5)
             else:
-                response = self.session.post(f"https://notpx.app/api/v1{end_point}",timeout=5,json=data)
-                # handle notpixel heavyload error
-                if "failed to parse" in response.text:
-                    print("[x] {}NotPixel internal error. wait 5 minutes...{}".format(Colors.RED,Colors.END))
-                    time.sleep(5*60)
-                    return
-                
-                if response.status_code == 200:
-                    if key_check in response.text:
-                        json_response = response.json()
-                        return json_response
-                    else:
-                        raise Exception(report_bug_text.format(response.text))
-                elif response.status_code >= 500:
-                    time.sleep(5)
-                    return self.request(method,end_point,key_check,data)
+                response = self.session.post(f"https://notpx.app/api/v1{end_point}", timeout=5, json=data)
+
+            # Handle notpixel heavyload error
+            if "failed to parse" in response.text:
+                print("[x] {}NotPixel internal error. Wait 5 minutes...{}".format(Colors.RED, Colors.END))
+                time.sleep(5 * 60)
+                return None  # Return None on failure
+            
+            if response.status_code == 200:
+                if key_check in response.text:
+                    return response.json()  # Return the JSON response
                 else:
-                    WebAppQuery = GetWebAppData(self.client)
-                    self.session.headers['Authorization'] = WebAppQuery
-                    print("[+] Authentication renewed!")
-                    # raise Exception(authenticate_error)
+                    raise Exception(report_bug_text.format(response.text))
+            elif response.status_code >= 500:
+                time.sleep(5)
+                return self.request(method, end_point, key_check, data)  # Retry on server error
+            else:
+                WebAppQuery = GetWebAppData(self.client)
+                self.session.headers['Authorization'] = WebAppQuery
+                print("[+] Authentication renewed!")
+                return None  # Return None if authentication is needed
+            
         except requests.exceptions.ConnectionError:
-            print("[!] {}Requester{}: {}ConnectionError{} {}. Sleeping for 5s...".format(
-                    Colors.CYAN,Colors.END,
-                    Colors.RED,Colors.END,
-                    end_point
-                ))
+            print("[!] {}ConnectionError{} {}. Sleeping for 5s...".format(Colors.RED, Colors.END, end_point))
             time.sleep(5)
         except urllib3.exceptions.NewConnectionError:
-            print("[!] {}Requester{}: {}NewConnectionError{} {}. Sleeping for 5s...".format(
-                    Colors.CYAN,Colors.END,
-                    Colors.RED,Colors.END,
-                    end_point
-                ))
+            print("[!] {}NewConnectionError{} {}. Sleeping for 5s...".format(Colors.RED, Colors.END, end_point))
             time.sleep(5)
         except requests.exceptions.Timeout:
-            print("[!] {}Requester{}: {}Timeout Error{} {}. Sleeping for 5s...".format(
-                    Colors.CYAN,Colors.END,
-                    Colors.RED,Colors.END,
-                    end_point
-                ))
+            print("[!] {}Timeout Error{} {}. Sleeping for 5s...".format(Colors.RED, Colors.END, end_point))
             time.sleep(5)
+        
+        return None  # Return None for any unhandled exceptions
 
     def claim_mining(self):
         return self.request("get","/mining/claim","claimed")['claimed']
