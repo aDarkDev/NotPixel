@@ -17,6 +17,10 @@ a fully automatic tool for claiming and painting. With built-in anti-detection f
 
 Upcoming features: `Level Up` and `Boosts`.
 
+## Quick Installation
+
+To easy install libraries and run bot just open run.bat on Windows and edit .env file
+
 ## Installation
 
 1. Install the required libraries:
