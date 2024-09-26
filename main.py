@@ -155,7 +155,7 @@ print(r"""{}
 | |\  | (_) | |_| |    >  <  | |_/ / (_) | |_ 
 \_| \_/\___/ \__\_|   /_/\_\ \____/ \___/ \__|
                                               
-        NotPx Auto Paint & Claim by aDarkDev - v1.5 {}\n""".format(Colors.BLUE, Colors.END))
+        NotPx Auto Paint & Claim by aDarkDev - v1.5 {}""".format(Colors.BLUE, Colors.END))
 
 
 def painter(NotPxClient:NotPx,session_name:str):
