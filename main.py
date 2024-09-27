@@ -65,7 +65,7 @@ class NotPx:
                 time.sleep(5)
                 return self.request(method, end_point, key_check, data)  # Retry on server error
             else:
-                WebAppQuery = client.loop.run_until_complete(GetWebAppData(self.client))
+                WebAppQuery = self.client.loop.run_until_complete(GetWebAppData(self.client))
                 self.session.headers['Authorization'] = WebAppQuery
                 print("[+] Authentication renewed!")
                 return None  # Return None if authentication is needed
