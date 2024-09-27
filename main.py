@@ -12,22 +12,22 @@ api_hash = "123" # put your api_hash
 report_bug_text = "If you have done all the steps correctly and you think this is a bug, report it to github.com/aDarkDev with response. response: {}"
 authenticate_error = "Please follow the steps correctly. Not authenticated."
 
-def GetWebAppData(client):
-    notcoin = client.get_entity("notpixel")
-    msg = client(functions.messages.RequestWebViewRequest(notcoin,notcoin,platform="android",url="https://notpx.app/"))
+async def GetWebAppData(client):
+    notcoin = await client.get_entity("notpixel")
+    msg = await client(functions.messages.RequestWebViewRequest(notcoin,notcoin,platform="android",url="https://notpx.app/"))
     webappdata_global = msg.url.split('https://notpx.app/#tgWebAppData=')[1].replace("%3D","=").split('&tgWebAppVersion=')[0].replace("%26","&")
     user_data = webappdata_global.split("&user=")[1].split("&auth")[0]
     webappdata_global = webappdata_global.replace(user_data,unquote(user_data))
     return webappdata_global
 
 class NotPx:
-    def __init__(self,client) -> None:
+    def __init__(self,client:TelegramClient) -> None:
         self.session = requests.Session()
         self.__update_headers(client)
 
-    def __update_headers(self,client):
+    def __update_headers(self,client:TelegramClient):
         self.client = client
-        WebAppQuery = GetWebAppData(client)
+        WebAppQuery = client.loop.run_until_complete(GetWebAppData(client))
         self.session.headers = {
             'Accept': 'application/json, text/plain, */*',
             'Accept-Language': 'en-US,en;q=0.9',
@@ -65,7 +65,7 @@ class NotPx:
                 time.sleep(5)
                 return self.request(method, end_point, key_check, data)  # Retry on server error
             else:
-                WebAppQuery = GetWebAppData(self.client)
+                WebAppQuery = client.loop.run_until_complete(GetWebAppData(self.client))
                 self.session.headers['Authorization'] = WebAppQuery
                 print("[+] Authentication renewed!")
                 return None  # Return None if authentication is needed
