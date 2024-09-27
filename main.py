@@ -1,5 +1,3 @@
-import os
-from dotenv import load_dotenv
 from telethon.sync import TelegramClient, functions
 from urllib.parse import unquote
 import threading
@@ -7,13 +5,10 @@ import requests
 import urllib3
 import random
 import time
+import os
 
-# Load environment variables from .env file
-load_dotenv()
-
-# Retrieve the API ID and hash from environment variables
-api_id = int(os.getenv("API_ID"))  # Convert to int
-api_hash = os.getenv("API_HASH")
+api_id = 123  # put your api_id
+api_hash = "123" # put your api_hash
 report_bug_text = "If you have done all the steps correctly and you think this is a bug, report it to github.com/aDarkDev with response. response: {}"
 authenticate_error = "Please follow the steps correctly. Not authenticated."
 
