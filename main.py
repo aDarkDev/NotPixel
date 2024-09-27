@@ -3,6 +3,7 @@ from urllib.parse import unquote
 import threading
 import requests
 import urllib3
+import asyncio
 import random
 import time
 import os
@@ -21,13 +22,15 @@ async def GetWebAppData(client):
     return webappdata_global
 
 class NotPx:
-    def __init__(self,client:TelegramClient) -> None:
+    def __init__(self,session_name:str) -> None:
         self.session = requests.Session()
-        self.__update_headers(client)
+        self.session_name = session_name
+        self.__update_headers()
 
-    def __update_headers(self,client:TelegramClient):
-        self.client = client
+    def __update_headers(self):
+        client = TelegramClient(self.session_name,api_id,api_hash).start()
         WebAppQuery = client.loop.run_until_complete(GetWebAppData(client))
+        client.disconnect()
         self.session.headers = {
             'Accept': 'application/json, text/plain, */*',
             'Accept-Language': 'en-US,en;q=0.9',
@@ -49,7 +52,7 @@ class NotPx:
                 response = self.session.get(f"https://notpx.app/api/v1{end_point}", timeout=5)
             else:
                 response = self.session.post(f"https://notpx.app/api/v1{end_point}", timeout=5, json=data)
-
+            print(response.text)
             # Handle notpixel heavyload error
             if "failed to parse" in response.text:
                 print("[x] {}NotPixel internal error. Wait 5 minutes...{}".format(Colors.RED, Colors.END))
@@ -65,10 +68,14 @@ class NotPx:
                 time.sleep(5)
                 return self.request(method, end_point, key_check, data)  # Retry on server error
             else:
-                WebAppQuery = self.client.loop.run_until_complete(GetWebAppData(self.client))
+                nloop = asyncio.new_event_loop()
+                asyncio.set_event_loop(nloop)
+                client = TelegramClient(self.session_name,api_id,api_hash,loop=nloop).start()
+                WebAppQuery = nloop.run_until_complete(GetWebAppData(client))
+                client.disconnect()
                 self.session.headers['Authorization'] = WebAppQuery
                 print("[+] Authentication renewed!")
-                return None  # Return None if authentication is needed
+                return self.request(method, end_point, key_check, data)
             
         except requests.exceptions.ConnectionError:
             print("[!] {}ConnectionError{} {}. Sleeping for 5s...".format(Colors.RED, Colors.END, end_point))
@@ -236,8 +243,7 @@ def multithread_starter():
     sessions = list(map(lambda x: x.split(".session")[0],sessions))
     for session_name in sessions:
         try:
-            client = TelegramClient("sessions/"+session_name,api_id,api_hash).start()
-            cli = NotPx(client)
+            cli = NotPx("sessions/"+session_name)
             threading.Thread(target=painter,args=[cli,session_name]).start()
             threading.Thread(target=mine_claimer,args=[cli,session_name]).start()
         except Exception as e:
