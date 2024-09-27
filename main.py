@@ -52,7 +52,6 @@ class NotPx:
                 response = self.session.get(f"https://notpx.app/api/v1{end_point}", timeout=5)
             else:
                 response = self.session.post(f"https://notpx.app/api/v1{end_point}", timeout=5, json=data)
-            print(response.text)
             # Handle notpixel heavyload error
             if "failed to parse" in response.text:
                 print("[x] {}NotPixel internal error. Wait 5 minutes...{}".format(Colors.RED, Colors.END))
