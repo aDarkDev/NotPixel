@@ -72,7 +72,9 @@ class NotPx:
                 client = TelegramClient(self.session_name,api_id,api_hash,loop=nloop).start()
                 WebAppQuery = nloop.run_until_complete(GetWebAppData(client))
                 client.disconnect()
-                self.session.headers['Authorization'] = 'initData' + WebAppQuery
+                self.session.headers.update({
+                    "Authorization":"initData " + WebAppQuery
+                })
                 print("[+] Authentication renewed!")
                 return self.request(method, end_point, key_check, data)
             
