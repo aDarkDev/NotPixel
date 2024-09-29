@@ -22,82 +22,77 @@ async def GetWebAppData(client):
 
 class NotPx:
     UpgradePaintReward = {
-        "levels": {
-            2: {
-                "Price": 5,
-            },
-            3: {
-                "Price": 100,
-            },
-            4: {
-                "Price": 200,
-            },
-            5: {
-                "Price": 300,
-            },
-            6: {
-                "Price": 500,
-            },
-            7: {
-                "Price": 600,
-                "Max": 1
-            }
+        2: {
+            "Price": 5,
+        },
+        3: {
+            "Price": 100,
+        },
+        4: {
+            "Price": 200,
+        },
+        5: {
+            "Price": 300,
+        },
+        6: {
+            "Price": 500,
+        },
+        7: {
+            "Price": 600,
+            "Max": 1
         }
     }
+
     UpgradeReChargeSpeed = {
-        "levels": {
-            2: {
-                "Price": 5,
-            },
-            3: {
-                "Price": 100,
-            },
-            4: {
-                "Price": 200,
-            },
-            5: {
-                "Price": 300,
-            },
-            6: {
-                "Price": 400,
-            },
-            7: {
-                "Price": 500,
-            },
-            8: {
-                "Price": 600,
-            },
-            9: {
-                "Price": 700,
-            },
-            10: {
-                "Price": 800,
-            },
-            11: {
-                "Price": 900,
-                "Max":1
-            }
+        2: {
+            "Price": 5,
+        },
+        3: {
+            "Price": 100,
+        },
+        4: {
+            "Price": 200,
+        },
+        5: {
+            "Price": 300,
+        },
+        6: {
+            "Price": 400,
+        },
+        7: {
+            "Price": 500,
+        },
+        8: {
+            "Price": 600,
+        },
+        9: {
+            "Price": 700,
+        },
+        10: {
+            "Price": 800,
+        },
+        11: {
+            "Price": 900,
+            "Max":1
         }
     }
     
     UpgradeEnergyLimit = {
-        "levels": {
-            2: {
-                "Price": 5,
-            },
-            3: {
-                "Price": 100,
-            },
-            4: {
-                "Price": 200,
-            },
-            5: {
-                "Price": 300,
-            },
-            6: {
-                "Price": 400,
-                "Max": 1
-            }
+        2: {
+            "Price": 5,
+        },
+        3: {
+            "Price": 100,
+        },
+        4: {
+            "Price": 200,
+        },
+        5: {
+            "Price": 300,
+        },
+        6: {
+            "Price": 400,
+            "Max": 1
         }
     }
 
@@ -258,20 +253,20 @@ def painter(NotPxClient:NotPx,session_name:str):
                 continue
             else:
                 charges = user_status['charges']
-                levels_recharge = user_status['boosts']['reChargeSpeed']
-                levels_paintreward = user_status['boosts']['paintReward']
-                levels_energylimit = user_status['boosts']['energyLimit']
+                levels_recharge = user_status['boosts']['reChargeSpeed'] + 1
+                levels_paintreward = user_status['boosts']['paintReward'] + 1
+                levels_energylimit = user_status['boosts']['energyLimit'] + 1
                 user_balance = user_status['userBalance']
 
             if levels_recharge < config.RE_CHARGE_SPEED_MAX and NotPx.UpgradeReChargeSpeed[levels_recharge]['Price'] >= user_balance:
                 status = NotPxClient.upgrade_reChargeSpeed()
-                print("[+] {}ReChargeSpeed Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_recharge+1,status))
+                print("[+] {}ReChargeSpeed Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_recharge,status))
             elif levels_paintreward < config.PAINT_REWARD_MAX and NotPx.UpgradePaintReward[levels_paintreward]['Price'] >= user_balance:
                 status = NotPxClient.upgrade_paintreward()
-                print("[+] {}PaintReward Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_paintreward+1,status))
+                print("[+] {}PaintReward Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_paintreward,status))
             elif levels_energylimit < config.ENERGY_LIMIT_MAX and NotPx.UpgradeEnergyLimit[levels_energylimit]['Price'] >= user_balance:
                 status = NotPxClient.upgrade_energyLimit()
-                print("[+] {}EnergyLimit Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_energylimit+1,status))
+                print("[+] {}EnergyLimit Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_energylimit,status))
 
             if charges > 0:
                 for _ in range(charges):
