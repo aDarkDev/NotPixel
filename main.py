@@ -5,11 +5,10 @@ import requests
 import urllib3
 import asyncio
 import random
+import config
 import time
 import os
 
-api_id = 123  # put your api_id
-api_hash = "123" # put your api_hash
 report_bug_text = "If you have done all the steps correctly and you think this is a bug, report it to github.com/aDarkDev with response. response: {}"
 authenticate_error = "Please follow the steps correctly. Not authenticated."
 
@@ -22,13 +21,95 @@ async def GetWebAppData(client):
     return webappdata_global
 
 class NotPx:
+    UpgradePaintReward = {
+        "levels": {
+            2: {
+                "Price": 5,
+            },
+            3: {
+                "Price": 100,
+            },
+            4: {
+                "Price": 200,
+            },
+            5: {
+                "Price": 300,
+            },
+            6: {
+                "Price": 500,
+            },
+            7: {
+                "Price": 600,
+                "Max": 1
+            }
+        }
+    }
+    UpgradeReChargeSpeed = {
+        "levels": {
+            2: {
+                "Price": 5,
+            },
+            3: {
+                "Price": 100,
+            },
+            4: {
+                "Price": 200,
+            },
+            5: {
+                "Price": 300,
+            },
+            6: {
+                "Price": 400,
+            },
+            7: {
+                "Price": 500,
+            },
+            8: {
+                "Price": 600,
+            },
+            9: {
+                "Price": 700,
+            },
+            10: {
+                "Price": 800,
+            },
+            11: {
+                "Price": 900,
+                "Max":1
+            }
+        }
+    }
+    
+    UpgradeEnergyLimit = {
+        "levels": {
+            2: {
+                "Price": 5,
+            },
+            3: {
+                "Price": 100,
+            },
+            4: {
+                "Price": 200,
+            },
+            5: {
+                "Price": 300,
+            },
+            6: {
+                "Price": 400,
+                "Max": 1
+            }
+        }
+    }
+
     def __init__(self,session_name:str) -> None:
         self.session = requests.Session()
+        if config.USE_PROXY:
+            self.session.proxies = config.PROXIES
         self.session_name = session_name
         self.__update_headers()
 
     def __update_headers(self):
-        client = TelegramClient(self.session_name,api_id,api_hash).start()
+        client = TelegramClient(self.session_name,config.API_ID,config.API_HASH).start()
         WebAppQuery = client.loop.run_until_complete(GetWebAppData(client))
         client.disconnect()
         self.session.headers = {
@@ -56,28 +137,25 @@ class NotPx:
             if "failed to parse" in response.text:
                 print("[x] {}NotPixel internal error. Wait 5 minutes...{}".format(Colors.RED, Colors.END))
                 time.sleep(5 * 60)
-                return None  # Return None on failure
-            
-            if response.status_code == 200:
+            elif response.status_code == 200:
                 if key_check in response.text:
                     return response.json()  # Return the JSON response
                 else:
                     raise Exception(report_bug_text.format(response.text))
             elif response.status_code >= 500:
                 time.sleep(5)
-                return self.request(method, end_point, key_check, data)  # Retry on server error
             else:
                 nloop = asyncio.new_event_loop()
                 asyncio.set_event_loop(nloop)
-                client = TelegramClient(self.session_name,api_id,api_hash,loop=nloop).start()
+                client = TelegramClient(self.session_name,config.API_ID,config.API_HASH,loop=nloop).start()
                 WebAppQuery = nloop.run_until_complete(GetWebAppData(client))
                 client.disconnect()
                 self.session.headers.update({
                     "Authorization":"initData " + WebAppQuery
                 })
                 print("[+] Authentication renewed!")
-                return self.request(method, end_point, key_check, data)
-            
+                time.sleep(2)
+        
         except requests.exceptions.ConnectionError:
             print("[!] {}ConnectionError{} {}. Sleeping for 5s...".format(Colors.RED, Colors.END, end_point))
             time.sleep(5)
@@ -88,7 +166,7 @@ class NotPx:
             print("[!] {}Timeout Error{} {}. Sleeping for 5s...".format(Colors.RED, Colors.END, end_point))
             time.sleep(5)
         
-        return None  # Return None for any unhandled exceptions
+        return self.request(method, end_point, key_check, data)
 
     def claim_mining(self):
         return self.request("get","/mining/claim","claimed")['claimed']
@@ -110,6 +188,15 @@ class NotPx:
 
         return self.request("post","/repaint/start","balance",data)['balance']
 
+    def upgrade_paintreward(self):
+        return self.request("get","/mining/boost/check/paintReward","paintReward")['paintReward']
+    
+    def upgrade_energyLimit(self):
+        return self.request("get","/mining/boost/check/energyLimit","energyLimit")['energyLimit']
+    
+    def upgrade_reChargeSpeed(self):
+        return self.request("get","/mining/boost/check/reChargeSpeed","reChargeSpeed")['reChargeSpeed']
+    
 class Colors:
     # Source: https://gist.github.com/rene-d/9e584a7dd2935d0f461904b9f2950007
     """ ANSI color codes """
@@ -158,19 +245,33 @@ print(r"""{}
 | |\  | (_) | |_| |    >  <  | |_/ / (_) | |_ 
 \_| \_/\___/ \__\_|   /_/\_\ \____/ \___/ \__|
                                               
-        NotPx Auto Paint & Claim by aDarkDev - v1.5 {}""".format(Colors.BLUE, Colors.END))
+        NotPx Auto Paint & Claim by aDarkDev - v2.0 {}""".format(Colors.BLUE, Colors.END))
 
 
 def painter(NotPxClient:NotPx,session_name:str):
     print("[+] {}Auto painting started{}.".format(Colors.CYAN,Colors.END))
     while True:
         try:
-            charges = NotPxClient.accountStatus()
-            if not charges:
+            user_status = NotPxClient.accountStatus()
+            if not user_status:
                 time.sleep(5)
                 continue
             else:
-                charges = charges['charges']
+                charges = user_status['charges']
+                levels_recharge = user_status['boosts']['reChargeSpeed']
+                levels_paintreward = user_status['boosts']['paintReward']
+                levels_energylimit = user_status['boosts']['energyLimit']
+                user_balance = user_status['userBalance']
+
+            if levels_recharge < config.RE_CHARGE_SPEED_MAX and NotPx.UpgradeReChargeSpeed[levels_recharge]['Price'] >= user_balance:
+                status = NotPxClient.upgrade_reChargeSpeed()
+                print("[+] {}ReChargeSpeed Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_recharge+1,status))
+            elif levels_paintreward < config.PAINT_REWARD_MAX and NotPx.UpgradePaintReward[levels_paintreward]['Price'] >= user_balance:
+                status = NotPxClient.upgrade_paintreward()
+                print("[+] {}PaintReward Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_paintreward+1,status))
+            elif levels_energylimit < config.ENERGY_LIMIT_MAX and NotPx.UpgradeEnergyLimit[levels_energylimit]['Price'] >= user_balance:
+                status = NotPxClient.upgrade_energyLimit()
+                print("[+] {}EnergyLimit Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_energylimit+1,status))
 
             if charges > 0:
                 for _ in range(charges):
@@ -260,7 +361,7 @@ if __name__ == "__main__":
         if option == "1":
             name = input("\nEnter Session name: ")
             if not any(name in i for i in os.listdir("sessions/")):
-                client = TelegramClient("sessions/"+name,api_id,api_hash).start()
+                client = TelegramClient("sessions/"+name,config.API_ID,config.API_HASH).start()
                 client.disconnect()
                 print("[+] Session {} {}saved success{}.".format(name,Colors.GREEN,Colors.END))
             else:
