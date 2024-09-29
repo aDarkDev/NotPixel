@@ -5,10 +5,11 @@ a fully automatic tool for claiming and painting. With built-in anti-detection f
 ![d](https://github.com/aDarkDev/NotPixel/blob/3478a347a2783afbe5faff49672c4bead56d9907/shot.png)
 
 ## Features:
-* 👾 Multi-Session ( New Update )
-* 🔥 Multi-Thread  ( New Update )
-* ⭕️ Error handling  ( New Update )
-* ✍🏻 Draw with desired x,y ( New Update )
+* 🌵 Automatic Boosting ( New Update )
+* 👾 Multi-Session
+* 🔥 Multi-Thread 
+* ⭕️ Error handling 
+* ✍🏻 Draw with desired x,y
 * 💰 Claim Mining
 * 💰 Paint Pixel
 * 💸 Show user balance
