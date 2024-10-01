@@ -15,7 +15,7 @@ a fully automatic tool for claiming and painting. With built-in anti-detection f
 * 💸 Show user balance
 * 🤖 Anti detect
 * 🐍 easy to use as module
-
+* 💤 sleep at nights
 Upcoming features: 🤔
 
 ## Quick Installation
@@ -26,7 +26,7 @@ To easy install libraries and run bot just open run.bat on Windows and edit .env
 
 1. Install the required libraries:
    ```bash
-   $ python3 -m pip install -r requirements.txt
+   $ python3 -m pip install -r req.txt
    ```
 2. Insert  your API Hash and API ID, which can be obtained from my.telegram.org under the Development section in main.py
 
