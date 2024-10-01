@@ -155,17 +155,15 @@ class NotPx:
                 print("[+] Authentication renewed!")
                 time.sleep(2)
         
-        except requests.exceptions.ConnectionError:
-            print("[!] {}ConnectionError{} {}. Sleeping for 5s...".format(Colors.RED, Colors.END, end_point))
-            time.sleep(5)
-        except urllib3.exceptions.NewConnectionError:
-            print("[!] {}NewConnectionError{} {}. Sleeping for 5s...".format(Colors.RED, Colors.END, end_point))
-            time.sleep(5)
-        except requests.exceptions.Timeout:
-            print("[!] {}Timeout Error{} {}. Sleeping for 5s...".format(Colors.RED, Colors.END, end_point))
-            time.sleep(5)
+        except (requests.exceptions.ConnectionError, 
+                    urllib3.exceptions.NewConnectionError,
+                    requests.exceptions.Timeout) as e:
+                print(f"[!] {Colors.RED}{type(e).__name__}{Colors.END} {end_point}. Sleeping for 5s...")
+                time.sleep(5)
         
         return self.request(method, end_point, key_check, data)
+
+
 
     def claim_mining(self):
         return self.request("get","/mining/claim","claimed")['claimed']
@@ -274,7 +272,7 @@ def painter(NotPxClient: NotPx, session_name: str):
                 recharge_speed = user_status['reChargeSpeed']/1000
                 random_recharge_speed = random.randint(10,60)
                 user_balance = user_status['userBalance']
-
+            
             if levels_recharge < config.RE_CHARGE_SPEED_MAX and NotPx.UpgradeReChargeSpeed[levels_recharge]['Price'] >= user_balance:
                 status = NotPxClient.upgrade_reChargeSpeed()
                 print("[+] {}ReChargeSpeed Upgrade{} to level {} result: {}".format(Colors.CYAN, Colors.END, levels_recharge, status))
@@ -284,7 +282,6 @@ def painter(NotPxClient: NotPx, session_name: str):
             elif levels_energylimit < config.ENERGY_LIMIT_MAX and NotPx.UpgradeEnergyLimit[levels_energylimit]['Price'] >= user_balance:
                 status = NotPxClient.upgrade_energyLimit()
                 print("[+] {}EnergyLimit Upgrade{} to level {} result: {}".format(Colors.CYAN, Colors.END, levels_energylimit, status))
-
             if charges > 0:
                 for _ in range(charges):
                     balance = NotPxClient.autoPaintPixel()
@@ -303,24 +300,11 @@ def painter(NotPxClient: NotPx, session_name: str):
                     ((recharge_speed+random_recharge_speed)/60)
                 ))
                 time.sleep(recharge_speed+random_recharge_speed)
-        except requests.exceptions.ConnectionError:
-            print("[!] {}{}{}: {}ConnectionError{}. Sleeping for 5s...".format(
-                Colors.CYAN, session_name, Colors.END,
-                Colors.RED, Colors.END
-            ))
-            time.sleep(5)
-        except urllib3.exceptions.NewConnectionError:
-            print("[!] {}{}{}: {}NewConnectionError{}. Sleeping for 5s...".format(
-                Colors.CYAN, session_name, Colors.END,
-                Colors.RED, Colors.END
-            ))
-            time.sleep(5)
-        except requests.exceptions.Timeout:
-            print("[!] {}{}{}: {}Timeout Error{}. Sleeping for 5s...".format(
-                Colors.CYAN, session_name, Colors.END,
-                Colors.RED, Colors.END
-            ))
-            time.sleep(5)
+        except (requests.exceptions.ConnectionError, 
+                    urllib3.exceptions.NewConnectionError,
+                    requests.exceptions.Timeout) as e:
+                print(f"[!] {Colors.RED}{type(e).__name__}{Colors.END} {session_name}. Sleeping for 5s...")
+                time.sleep(5)
         
         
 def mine_claimer(NotPxClient: NotPx, session_name: str):
@@ -328,6 +312,7 @@ def mine_claimer(NotPxClient: NotPx, session_name: str):
 
     print("[+] {}Auto claiming started{}.".format(Colors.CYAN, Colors.END))
     while True:
+        night_sleep()  # Check and sleep if it's between 12-1 AM Iran time
         acc_data = NotPxClient.accountStatus()
         
         # Check if acc_data is None
@@ -370,8 +355,8 @@ if __name__ == "__main__":
         os.mkdir("sessions")
 
     while True:
-        option = input("[!] {}Enter 1{} For Adding Account and {}2 for start{} mine + claim: ".format(Colors.BLUE,Colors.END,Colors.BLUE,Colors.END))
-        # option ="2"
+        # option = input("[!] {}Enter 1{} For Adding Account and {}2 for start{} mine + claim: ".format(Colors.BLUE,Colors.END,Colors.BLUE,Colors.END))
+        option ="2"
         if option == "1":
             name = input("\nEnter Session name: ")
             if not any(name in i for i in os.listdir("sessions/")):
