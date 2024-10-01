@@ -272,6 +272,7 @@ def painter(NotPxClient: NotPx, session_name: str):
                 levels_paintreward = user_status['boosts']['paintReward'] + 1
                 levels_energylimit = user_status['boosts']['energyLimit'] + 1
                 recharge_speed = user_status['reChargeSpeed']/1000
+                random_recharge_speed = random.randint(10,60)
                 user_balance = user_status['userBalance']
 
             if levels_recharge < config.RE_CHARGE_SPEED_MAX and NotPx.UpgradeReChargeSpeed[levels_recharge]['Price'] >= user_balance:
@@ -299,9 +300,9 @@ def painter(NotPxClient: NotPx, session_name: str):
                 print("[!] {}{}{}: {}No charge available{}. Sleeping for {} minutes...".format(
                     Colors.CYAN, session_name, Colors.END,
                     Colors.YELLOW, Colors.END,
-                    recharge_speed/60
+                    ((recharge_speed+random_recharge_speed)/60)
                 ))
-                time.sleep(recharge_speed)
+                time.sleep(recharge_speed+random_recharge_speed)
         except requests.exceptions.ConnectionError:
             print("[!] {}{}{}: {}ConnectionError{}. Sleeping for 5s...".format(
                 Colors.CYAN, session_name, Colors.END,
