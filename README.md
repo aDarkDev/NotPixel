@@ -16,6 +16,7 @@ a fully automatic tool for claiming and painting. With built-in anti-detection f
 * 🤖 Anti detect
 * 🐍 easy to use as module
 * 💤 sleep at nights
+* 
 Upcoming features: 🤔
 
 ## Quick Installation
