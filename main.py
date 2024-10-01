@@ -1,3 +1,4 @@
+
 from telethon.sync import TelegramClient, functions
 from urllib.parse import unquote
 import threading
@@ -8,6 +9,9 @@ import random
 import config
 import time
 import os
+import datetime
+import pytz
+import random
 
 report_bug_text = "If you have done all the steps correctly and you think this is a bug, report it to github.com/aDarkDev with response. response: {}"
 authenticate_error = "Please follow the steps correctly. Not authenticated."
@@ -240,13 +244,24 @@ print(r"""{}
 | |\  | (_) | |_| |    >  <  | |_/ / (_) | |_ 
 \_| \_/\___/ \__\_|   /_/\_\ \____/ \___/ \__|
                                               
-        NotPx Auto Paint & Claim by aDarkDev - v2.0 {}""".format(Colors.BLUE, Colors.END))
+        NotPx Auto Paint & Claim by AliCloner - v1.0 {}""".format(Colors.BLUE, Colors.END))
 
+def night_sleep():
+    iran_tz = pytz.timezone('Asia/Tehran')
+    now = datetime.datetime.now(iran_tz)
+    
+    if now.hour == 0:  # Check if the hour is 12 AM in Iran time
+        sleep_duration = random.randint(7, 10) * 3600  # Random sleep between 7 to 10 hours in seconds
+        print(f"[!] It's currently {now.strftime('%H:%M')} in Iran. Sleeping for {sleep_duration / 3600} hours...")
+        time.sleep(sleep_duration)
+    else:
+        print(f"[!] It's {now.strftime('%H:%M')} in Iran. Continuing script...")
 
-def painter(NotPxClient:NotPx,session_name:str):
-    print("[+] {}Auto painting started{}.".format(Colors.CYAN,Colors.END))
+def painter(NotPxClient: NotPx, session_name: str):
+    print("[+] {}Auto painting started{}.".format(Colors.CYAN, Colors.END))
     while True:
         try:
+            night_sleep()  # Check and sleep if it's between 12-1 AM Iran time
             user_status = NotPxClient.accountStatus()
             if not user_status:
                 time.sleep(5)
@@ -256,52 +271,54 @@ def painter(NotPxClient:NotPx,session_name:str):
                 levels_recharge = user_status['boosts']['reChargeSpeed'] + 1
                 levels_paintreward = user_status['boosts']['paintReward'] + 1
                 levels_energylimit = user_status['boosts']['energyLimit'] + 1
+                recharge_speed = user_status['reChargeSpeed']/1000
                 user_balance = user_status['userBalance']
 
             if levels_recharge < config.RE_CHARGE_SPEED_MAX and NotPx.UpgradeReChargeSpeed[levels_recharge]['Price'] >= user_balance:
                 status = NotPxClient.upgrade_reChargeSpeed()
-                print("[+] {}ReChargeSpeed Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_recharge,status))
+                print("[+] {}ReChargeSpeed Upgrade{} to level {} result: {}".format(Colors.CYAN, Colors.END, levels_recharge, status))
             elif levels_paintreward < config.PAINT_REWARD_MAX and NotPx.UpgradePaintReward[levels_paintreward]['Price'] >= user_balance:
                 status = NotPxClient.upgrade_paintreward()
-                print("[+] {}PaintReward Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_paintreward,status))
+                print("[+] {}PaintReward Upgrade{} to level {} result: {}".format(Colors.CYAN, Colors.END, levels_paintreward, status))
             elif levels_energylimit < config.ENERGY_LIMIT_MAX and NotPx.UpgradeEnergyLimit[levels_energylimit]['Price'] >= user_balance:
                 status = NotPxClient.upgrade_energyLimit()
-                print("[+] {}EnergyLimit Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_energylimit,status))
+                print("[+] {}EnergyLimit Upgrade{} to level {} result: {}".format(Colors.CYAN, Colors.END, levels_energylimit, status))
 
             if charges > 0:
                 for _ in range(charges):
                     balance = NotPxClient.autoPaintPixel()
                     print("[+] {}{}{}: 1 {}Pixel painted{} successfully. User new balance: {}{}{}".format(
-                        Colors.CYAN,session_name,Colors.END,
-                        Colors.GREEN,Colors.END,
-                        Colors.GREEN,balance,Colors.END
+                        Colors.CYAN, session_name, Colors.END,
+                        Colors.GREEN, Colors.END,
+                        Colors.GREEN, balance, Colors.END
                     ))
-                    t = random.randint(1,6)
-                    print("[!] {}{} anti-detect{}: Sleeping for {}...".format(Colors.CYAN,session_name,Colors.END,t))
+                    t = random.randint(1, 10)
+                    print("[!] {}{} anti-detect{}: Sleeping for {}...".format(Colors.CYAN, session_name, Colors.END, t))
                     time.sleep(t)
             else:
-                print("[!] {}{}{}: {}No charge available{}. Sleeping for 10 minutes...".format(
-                    Colors.CYAN,session_name,Colors.END,
-                    Colors.YELLOW,Colors.END
+                print("[!] {}{}{}: {}No charge available{}. Sleeping for {} minutes...".format(
+                    Colors.CYAN, session_name, Colors.END,
+                    Colors.YELLOW, Colors.END,
+                    recharge_speed/60
                 ))
-                time.sleep(600)
+                time.sleep(recharge_speed)
         except requests.exceptions.ConnectionError:
             print("[!] {}{}{}: {}ConnectionError{}. Sleeping for 5s...".format(
-                    Colors.CYAN,session_name,Colors.END,
-                    Colors.RED,Colors.END
-                ))
+                Colors.CYAN, session_name, Colors.END,
+                Colors.RED, Colors.END
+            ))
             time.sleep(5)
         except urllib3.exceptions.NewConnectionError:
             print("[!] {}{}{}: {}NewConnectionError{}. Sleeping for 5s...".format(
-                    Colors.CYAN,session_name,Colors.END,
-                    Colors.RED,Colors.END
-                ))
+                Colors.CYAN, session_name, Colors.END,
+                Colors.RED, Colors.END
+            ))
             time.sleep(5)
         except requests.exceptions.Timeout:
             print("[!] {}{}{}: {}Timeout Error{}. Sleeping for 5s...".format(
-                    Colors.CYAN,session_name,Colors.END,
-                    Colors.RED,Colors.END
-                ))
+                Colors.CYAN, session_name, Colors.END,
+                Colors.RED, Colors.END
+            ))
             time.sleep(5)
         
         
@@ -324,7 +341,7 @@ def mine_claimer(NotPxClient: NotPx, session_name: str):
             speedPerSecond = acc_data['speedPerSecond']
             if fromStart * speedPerSecond > 0.3:
                 claimed_count = round(NotPxClient.claim_mining(), 2)
-                print("[+] {}{}{}: {} NotPx Token {}claimed{}.".format(
+                print("[+] {}{}{}: {} NotPx Token {}Mined{}.".format(
                     Colors.CYAN, session_name, Colors.END,
                     claimed_count, Colors.GREEN, Colors.END
                 ))
@@ -353,6 +370,7 @@ if __name__ == "__main__":
 
     while True:
         option = input("[!] {}Enter 1{} For Adding Account and {}2 for start{} mine + claim: ".format(Colors.BLUE,Colors.END,Colors.BLUE,Colors.END))
+        # option ="2"
         if option == "1":
             name = input("\nEnter Session name: ")
             if not any(name in i for i in os.listdir("sessions/")):
