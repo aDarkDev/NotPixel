@@ -273,15 +273,20 @@ def painter(NotPxClient: NotPx, session_name: str):
                 random_recharge_speed = random.randint(10,60)
                 user_balance = user_status['userBalance']
             
-            if levels_recharge < config.RE_CHARGE_SPEED_MAX and NotPx.UpgradeReChargeSpeed[levels_recharge]['Price'] >= user_balance:
+            if levels_recharge - 1 < config.RE_CHARGE_SPEED_MAX and NotPx.UpgradeReChargeSpeed[levels_recharge]['Price'] <= user_balance:
                 status = NotPxClient.upgrade_reChargeSpeed()
-                print("[+] {}ReChargeSpeed Upgrade{} to level {} result: {}".format(Colors.CYAN, Colors.END, levels_recharge, status))
-            elif levels_paintreward < config.PAINT_REWARD_MAX and NotPx.UpgradePaintReward[levels_paintreward]['Price'] >= user_balance:
+                print("[+] {}ReChargeSpeed Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_recharge,status))
+                user_balance -= NotPx.UpgradeReChargeSpeed[levels_recharge]['Price']
+
+            if levels_paintreward - 1 < config.PAINT_REWARD_MAX and NotPx.UpgradePaintReward[levels_paintreward]['Price'] <= user_balance:
                 status = NotPxClient.upgrade_paintreward()
-                print("[+] {}PaintReward Upgrade{} to level {} result: {}".format(Colors.CYAN, Colors.END, levels_paintreward, status))
-            elif levels_energylimit < config.ENERGY_LIMIT_MAX and NotPx.UpgradeEnergyLimit[levels_energylimit]['Price'] >= user_balance:
+                print("[+] {}PaintReward Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_paintreward,status))
+                user_balance -= NotPx.UpgradePaintReward[levels_paintreward]['Price']
+
+            if levels_energylimit - 1 < config.ENERGY_LIMIT_MAX and NotPx.UpgradeEnergyLimit[levels_energylimit]['Price'] <= user_balance:
                 status = NotPxClient.upgrade_energyLimit()
-                print("[+] {}EnergyLimit Upgrade{} to level {} result: {}".format(Colors.CYAN, Colors.END, levels_energylimit, status))
+                print("[+] {}EnergyLimit Upgrade{} to level {} result: {}".format(Colors.CYAN,Colors.END,levels_energylimit,status))
+                user_balance -= NotPx.UpgradeEnergyLimit[levels_energylimit]['Price']
             if charges > 0:
                 for _ in range(charges):
                     balance = NotPxClient.autoPaintPixel()
