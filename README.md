@@ -32,6 +32,7 @@ To easy install libraries and run bot just open run.bat on Windows and edit .env
    ```
 2. Insert  your API Hash and API ID, which can be obtained from my.telegram.org under the Development section in config.py
 3. Change timezone to your own timezone. (you can check your timezone in here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)
+
 Then just run it!
 ```bash
 $ python3 main.py
