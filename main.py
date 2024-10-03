@@ -254,16 +254,17 @@ print(r"""{}
         NotPx Auto Paint & Claim by AliCloner - v1.0 {}""".format(Colors.BLUE, Colors.END))
 
 def night_sleep():
-    iran_tz = pytz.timezone('Asia/Tehran')
+    iran_tz = pytz.timezone(config.TIMEZONE)  # Use the timezone from config.py
     now = datetime.datetime.now(iran_tz)
     
     # Check if the current time is between 12 AM and 2 AM
     if 0 <= now.hour < 2:  
         sleep_duration = random.randint(7, 10)  # Random sleep between 7 to 10 hours
-        print(f"[!] It's currently {now.strftime('%H:%M')} in Iran. Sleeping for {sleep_duration} hours...")
+        print(f"[!] It's currently {now.strftime('%H:%M')} in {config.TIMEZONE}. Sleeping for {sleep_duration} hours...")
         time.sleep(sleep_duration * 3600)  # Convert hours to seconds
     else:
-        print(f"[!] It's {now.strftime('%H:%M')} in Iran. Continuing script...")
+        print(f"[!] It's {now.strftime('%H:%M')} in {config.TIMEZONE}. Continuing script...")
+        
 def painter(NotPxClient: NotPx, session_name: str):
     print("[+] {}Auto painting started{}.".format(Colors.CYAN, Colors.END))
     while True:
