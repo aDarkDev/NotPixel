@@ -257,13 +257,13 @@ def night_sleep():
     iran_tz = pytz.timezone('Asia/Tehran')
     now = datetime.datetime.now(iran_tz)
     
-    if now.hour == 0:  # Check if the hour is 12 AM in Iran time
-        sleep_duration = random.randint(7, 10) * 3600  # Random sleep between 7 to 10 hours in seconds
-        print(f"[!] It's currently {now.strftime('%H:%M')} in Iran. Sleeping for {sleep_duration / 3600} hours...")
-        time.sleep(sleep_duration)
+    # Check if the current time is between 12 AM and 2 AM
+    if 0 <= now.hour < 2:  
+        sleep_duration = random.randint(7, 10)  # Random sleep between 7 to 10 hours
+        print(f"[!] It's currently {now.strftime('%H:%M')} in Iran. Sleeping for {sleep_duration} hours...")
+        time.sleep(sleep_duration * 3600)  # Convert hours to seconds
     else:
         print(f"[!] It's {now.strftime('%H:%M')} in Iran. Continuing script...")
-
 def painter(NotPxClient: NotPx, session_name: str):
     print("[+] {}Auto painting started{}.".format(Colors.CYAN, Colors.END))
     while True:
