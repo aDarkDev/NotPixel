@@ -126,13 +126,14 @@ class NotPx:
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.6045.105 Safari/537.36',
         }
 
-    def request(self, method, end_point, key_check, data=None):
+    def request(self, method, end_point, key_check, data=None, retries=3):
         try:
             if method == "get":
                 response = self.session.get(f"https://notpx.app/api/v1{end_point}", timeout=5)
             else:
                 response = self.session.post(f"https://notpx.app/api/v1{end_point}", timeout=5, json=data)
-            # Handle notpixel heavyload error
+
+            # Handle NotPixel heavy load error
             if "failed to parse" in response.text:
                 print("[x] {}NotPixel internal error. Wait 5 minutes...{}".format(Colors.RED, Colors.END))
                 time.sleep(5 * 60)
@@ -142,28 +143,36 @@ class NotPx:
                 else:
                     raise Exception(report_bug_text.format(response.text))
             elif response.status_code >= 500:
-                time.sleep(5)
+                time.sleep(5)  # Sleep for 5 seconds on server errors
             else:
+                # Create a new event loop, renew authentication, and close the loop afterward
                 nloop = asyncio.new_event_loop()
                 asyncio.set_event_loop(nloop)
-                client = TelegramClient(self.session_name,config.API_ID,config.API_HASH,loop=nloop).start()
-                WebAppQuery = nloop.run_until_complete(GetWebAppData(client))
-                client.disconnect()
-                self.session.headers.update({
-                    "Authorization":"initData " + WebAppQuery
-                })
-                print("[+] Authentication renewed!")
-                time.sleep(2)
-        
+                try:
+                    client = TelegramClient(self.session_name, config.API_ID, config.API_HASH, loop=nloop).start()
+                    WebAppQuery = nloop.run_until_complete(GetWebAppData(client))
+                    client.disconnect()
+                    self.session.headers.update({
+                        "Authorization": "initData " + WebAppQuery
+                    })
+                    print("[+] Authentication renewed!")
+                    time.sleep(2)
+                finally:
+                    nloop.close()  # Ensure the event loop is closed
+
         except (requests.exceptions.ConnectionError, 
-                    urllib3.exceptions.NewConnectionError,
-                    requests.exceptions.Timeout) as e:
-                print(f"[!] {Colors.RED}{type(e).__name__}{Colors.END} {end_point}. Sleeping for 5s...")
-                time.sleep(5)
-        
-        return self.request(method, end_point, key_check, data)
+                urllib3.exceptions.NewConnectionError, 
+                requests.exceptions.Timeout) as e:
+            print(f"[!] {Colors.RED}{type(e).__name__}{Colors.END} {end_point}. Sleeping for 5s...")
+            time.sleep(5)
+            
+        # Retry logic with a retry limit
+        if retries > 0:
+            return self.request(method, end_point, key_check, data, retries - 1)
+        else:
+            raise Exception(f"Max retries reached for {end_point}")
 
-
+        return None  # Fallback return if no valid response was obtained
 
     def claim_mining(self):
         return self.request("get","/mining/claim","claimed")['claimed']
