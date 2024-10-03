@@ -38,4 +38,7 @@ Then just run it!
 $ python3 main.py
 ```
 
+## Stargazers over time
+[![Stargazers over time](https://starchart.cc/AliCl0ner/NotPixel.svg?variant=adaptive)](https://starchart.cc/AliCl0ner/NotPixel)
+
 ### Don't forget to star⭐️ the project and report any bugs🪲 you encounter. Good luck!
