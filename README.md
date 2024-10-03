@@ -30,7 +30,7 @@ To easy install libraries and run bot just open run.bat on Windows and edit .env
    ```bash
    $ python3 -m pip install -r req.txt
    ```
-2. Insert  your API Hash and API ID, which can be obtained from my.telegram.org under the Development section in main.py
+2. Insert  your API Hash and API ID, which can be obtained from my.telegram.org under the Development section in config.py
 
 Then just run it!
 ```bash
