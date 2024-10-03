@@ -14,3 +14,5 @@ PROXIES = {
     "http":"socks5://127.0.0.1",
     "https":"socks5://127.0.0.1", # if you using socks4 or http only replace it with "socks5"
 }
+# ================[timezone]================
+TIMEZONE = "Asia/Tehran"  # your timezone
