@@ -14,6 +14,7 @@ a fully automatic tool for claiming and painting. With built-in anti-detection f
 * 💰 Claim Mining
 * 💰 Paint Pixel
 * 💸 Show user balance
+* 🌐 Proxy
 * 🤖 Anti detect
 * 🐍 easy to use as module
 * 💤 sleep at nights
