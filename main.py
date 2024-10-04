@@ -104,6 +104,21 @@ class NotPx:
         self.session = requests.Session()
         if config.USE_PROXY:
             self.session.proxies = config.PROXIES
+            try:
+                # Make a request using the proxy
+                print(f"Using proxy: {config.PROXIES}")
+                response = requests.get('https://notpx.app/', proxies=config.PROXIES)
+                response.raise_for_status()  # Check if the request was successful
+                print("{}Proxy is working correctly.{}".format(Colors.GREEN, Colors.END))
+            except requests.exceptions.ProxyError as e:
+                print("{}Proxy failed:{} {}".format(Colors.RED, Colors.END,e))
+                raise SystemExit("{}[ERROR]{} Proxy is not working. Exiting...".format(Colors.RED, Colors.END))
+            except ConnectionError as e:
+                print("{}Connection error:{} {}.format(Colors.RED, Colors.END,e)")
+                raise SystemExit("{}[ERROR]{} Connection error. Exiting...".format(Colors.RED, Colors.END))
+            except Exception as e:
+                print("{}An unexpected error occurred:{} {}".format(Colors.RED, Colors.END,e))
+                raise SystemExit("{}[ERROR]{} Unexpected error. Exiting...".format(Colors.RED, Colors.END))
         self.session_name = session_name
         self.__update_headers()
 
