@@ -370,8 +370,8 @@ if __name__ == "__main__":
         os.mkdir("sessions")
 
     while True:
-        # option = input("[!] {}Enter 1{} For Adding Account and {}2 for start{} mine + claim: ".format(Colors.BLUE,Colors.END,Colors.BLUE,Colors.END))
-        option ="2"
+        option = input("[!] {}Enter 1{} For Adding Account and {}2 for start{} mine + claim: ".format(Colors.BLUE,Colors.END,Colors.BLUE,Colors.END))
+        #option ="2"
         if option == "1":
             name = input("\nEnter Session name: ")
             if not any(name in i for i in os.listdir("sessions/")):
