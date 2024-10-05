@@ -115,10 +115,10 @@ class NotPx:
             except requests.exceptions.ProxyError as e:
                 print("{}Proxy failed:{} {}".format(Colors.RED, Colors.END,e))
                 raise SystemExit("{}[ERROR]{} Proxy is not working. Exiting...".format(Colors.RED, Colors.END))
-            except ConnectionError as e:
+            except requests.exceptions.ConnectionError as e:
                 print("{}Connection error:{} {}.format(Colors.RED, Colors.END,e)")
                 raise SystemExit("{}[ERROR]{} Connection error. Exiting...".format(Colors.RED, Colors.END))
-            except Exception as e:
+            except requests.exceptions.Exception as e:
                 print("{}An unexpected error occurred:{} {}".format(Colors.RED, Colors.END,e))
                 raise SystemExit("{}[ERROR]{} Unexpected error. Exiting...".format(Colors.RED, Colors.END))
         self.session_name = session_name
