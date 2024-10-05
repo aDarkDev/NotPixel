@@ -105,10 +105,12 @@ class NotPx:
         if config.USE_PROXY:
             self.session.proxies = config.PROXIES
             try:
+                if "http" not in self.session.proxies or "https" not in self.session.proxies:
+                    raise ValueError(f"{Colors.RED}[ERROR]{Colors.END} Both 'http' and 'https' proxies must be defined.")
                 # Make a request using the proxy
-                print(f"Using proxy: {config.PROXIES}")
-                response = requests.get('https://notpx.app/', proxies=config.PROXIES)
-                response.raise_for_status()  # Check if the request was successful
+                print(f"Using proxy: {self.session.proxies}")
+                response = requests.get('https://app.notpx.app/', proxies=self.session.proxies)
+                print(response.raise_for_status())  # Check if the request was successful
                 print("{}Proxy is working correctly.{}".format(Colors.GREEN, Colors.END))
             except requests.exceptions.ProxyError as e:
                 print("{}Proxy failed:{} {}".format(Colors.RED, Colors.END,e))
