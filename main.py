@@ -1,4 +1,3 @@
-
 from telethon.sync import TelegramClient, functions
 from urllib.parse import unquote
 import threading
@@ -271,8 +270,8 @@ print(r"""{}
         NotPx Auto Paint & Claim by AliCloner - v1.0 {}""".format(Colors.BLUE, Colors.END))
 
 def night_sleep():
-    iran_tz = pytz.timezone(config.TIMEZONE)  # Use the timezone from config.py
-    now = datetime.datetime.now(iran_tz)
+    country_tz = pytz.timezone(config.TIMEZONE)  # Use the timezone from config.py
+    now = datetime.datetime.now(country_tz)
     
     # Check if the current time is between 12 AM and 2 AM
     if 0 <= now.hour < 2:  
