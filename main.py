@@ -295,7 +295,7 @@ def painter(NotPxClient: NotPx, session_name: str):
                 levels_paintreward = user_status['boosts']['paintReward'] + 1
                 levels_energylimit = user_status['boosts']['energyLimit'] + 1
                 recharge_speed = user_status['reChargeSpeed']/1000
-                random_recharge_speed = random.randint(10,60)
+                random_recharge_speed = random.randint(30,90)
                 user_balance = user_status['userBalance']
             
             if levels_recharge - 1 < config.RE_CHARGE_SPEED_MAX and NotPx.UpgradeReChargeSpeed[levels_recharge]['Price'] <= user_balance:
@@ -327,7 +327,7 @@ def painter(NotPxClient: NotPx, session_name: str):
                 print("[!] {}{}{}: {}No charge available{}. Sleeping for {} minutes...".format(
                     Colors.CYAN, session_name, Colors.END,
                     Colors.YELLOW, Colors.END,
-                    ((recharge_speed+random_recharge_speed)/60)
+                    round(((recharge_speed+random_recharge_speed)/60),2)
                 ))
                 time.sleep(recharge_speed+random_recharge_speed)
         except (requests.exceptions.ConnectionError, 
@@ -355,6 +355,8 @@ def mine_claimer(NotPxClient: NotPx, session_name: str):
         if 'fromStart' in acc_data and 'speedPerSecond' in acc_data:
             fromStart = acc_data['fromStart']
             speedPerSecond = acc_data['speedPerSecond']
+            maxMiningTime = acc_data['maxMiningTime']/60
+            random_recharge_speed = random.randint(30,90)
             if fromStart * speedPerSecond > 0.3:
                 claimed_count = round(NotPxClient.claim_mining(), 2)
                 print("[+] {}{}{}: {} NotPx Token {}Mined{}.".format(
@@ -364,8 +366,8 @@ def mine_claimer(NotPxClient: NotPx, session_name: str):
         else:
             print("[!] {}{}{}: {}Unexpected account data format. Retrying...{}".format(Colors.CYAN, session_name, Colors.END, Colors.RED, Colors.END))
         
-        print("[!] {}{}{}: Sleeping for 1 hour...".format(Colors.CYAN, session_name, Colors.END))
-        time.sleep(3600)
+        print("[!] {}{}{}: Sleeping for {} minutes...".format(Colors.CYAN, session_name, Colors.END,round((maxMiningTime+random_recharge_speed)/60),2))
+        time.sleep(maxMiningTime+random_recharge_speed)
 
 def multithread_starter():
     dirs = os.listdir("sessions/")
