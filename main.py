@@ -169,19 +169,30 @@ class NotPx:
     def accountStatus(self):
         return self.request("get","/mining/status","speedPerSecond")
 
+    def checkTemplate(self, pixelId):
+        # Placeholder for template checking logic
+        # This function should return True if the pixel is part of a template, otherwise False
+        return True
+
     def autoPaintPixel(self):
         # making pixel randomly
         colors = [ "#FFFFFF" , "#000000" , "#00CC78" , "#BE0039" ]
         random_pixel = (random.randint(100,990) * 1000) + random.randint(100,990)
-        data = {"pixelId":random_pixel,"newColor":random.choice(colors)}
-
-        return self.request("post","/repaint/start","balance",data)['balance']
+        if self.checkTemplate(random_pixel):
+            data = {"pixelId":random_pixel,"newColor":random.choice(colors)}
+            return self.request("post","/repaint/start","balance",data)['balance']
+        else:
+            print("[!] Pixel is not part of a template. Skipping...")
+            return None
     
     def paintPixel(self,x,y,hex_color):
         pixelformated = (y * 1000) + x + 1
-        data = {"pixelId":pixelformated,"newColor":hex_color}
-
-        return self.request("post","/repaint/start","balance",data)['balance']
+        if self.checkTemplate(pixelformated):
+            data = {"pixelId":pixelformated,"newColor":hex_color}
+            return self.request("post","/repaint/start","balance",data)['balance']
+        else:
+            print("[!] Pixel is not part of a template. Skipping...")
+            return None
 
     def upgrade_paintreward(self):
         return self.request("get","/mining/boost/check/paintReward","paintReward")['paintReward']
@@ -276,11 +287,12 @@ def painter(NotPxClient:NotPx,session_name:str):
             if charges > 0:
                 for _ in range(charges):
                     balance = NotPxClient.autoPaintPixel()
-                    print("[+] {}{}{}: 1 {}Pixel painted{} successfully. User new balance: {}{}{}".format(
-                        Colors.CYAN,session_name,Colors.END,
-                        Colors.GREEN,Colors.END,
-                        Colors.GREEN,balance,Colors.END
-                    ))
+                    if balance is not None:
+                        print("[+] {}{}{}: 1 {}Pixel painted{} successfully. User new balance: {}{}{}".format(
+                            Colors.CYAN,session_name,Colors.END,
+                            Colors.GREEN,Colors.END,
+                            Colors.GREEN,balance,Colors.END
+                        ))
                     t = random.randint(1,6)
                     print("[!] {}{} anti-detect{}: Sleeping for {}...".format(Colors.CYAN,session_name,Colors.END,t))
                     time.sleep(t)
